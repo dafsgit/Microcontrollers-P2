@@ -69,6 +69,8 @@
 
 ;**************** Definitions*********************************
 VEL EQU 0x01				;Reservar un registro temporal para la cuenta
+RETARDO EQU 0x02			;Reservar un registro temporal para el retardo
+MULTIPLO EQU 0x03			;Reservar un registro temporal para el múltiplo del loop
 ;*************************************************
 
     ORG 0x000				;vector de reset
@@ -78,9 +80,12 @@ init:
     MOVLW	0x0F			;Puertos A, B y E pueden ser digitales (I/O) o analógicos (sólo I)
     MOVWF	ADCON1			;PORTA es analógico por default y estas dos líneas lo obligan a ser digital
     
-    SETF	TRISB			;PORTB es entrada, RB2 sobra
+    CLRF	TRISB			;PORTB es salida
+    BSF		TRISB, 0		;RB0 es entrada
+    BSF		TRISB, 1		;RB1 es entrada
     CLRF	TRISD			;PORTD es salida
-    CLRF	PORTD			;Limpiar el puerto de salida
+    CLRF	PORTB			;Limpiar el puerto B
+    CLRF	PORTD			;Limpiar el puerto D
     MOVLW	0x03
     MOVWF	VEL			;Velocidad 3 (1 segundo) por defecto.
     RETURN				;leaving initialization subroutine
@@ -95,17 +100,13 @@ TIMER:
     BTFSC PORTB, 1
     INCF    VEL, F
     
-    MOVLW 0x05
-    CPFSLT VEL
-    MOVWF VEL
+    ;MOVLW 0x05
+    ;CPFSLT VEL
+    ;MOVWF VEL
     
-    MOVLW 0x01
-    CPFSGT VEL
-    MOVWF VEL
-    
-    MOVF VEL, W
-    SUBLW 0x00
-    DECF VEL, F
+    ;MOVLW 0x01
+    ;CPFSGT VEL
+    ;MOVWF VEL
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
     SUBLW 0x01				;Operación L-WREG (la literal 0x01 menos el resultado de la suma)
@@ -127,24 +128,140 @@ TIMER:
     SUBLW 0x05
     BZ	SEG_10
     
-    BRA SEG_1			;Falta definirlo, pero debe ir a la velocidad 3 por defecto.
-    
+    BRA SEG_1			
+
+RETORNO_TIMER:
     RETURN
     
-MILIS_100:
-    
+MILIS_20:
+    MOVLW 0xFA			; 250*(77+1+2)us = 20ms
+    MOVWF RETARDO
+LOOP:
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    DECFSZ RETARDO
+    GOTO LOOP
+    RETURN
 
-MILIS_500:
+MILIS_100:
+    MOVLW 0x05			; 5*20ms = 100ms
+    MOVWF MULTIPLO
+LOOP_1:
+    CALL MILIS_20
+    DECFSZ MULTIPLO
+    GOTO LOOP_1
+    GOTO RETORNO_TIMER
     
+MILIS_500:
+    MOVLW 0x19			; 25*20ms = 500ms
+    MOVWF MULTIPLO
+LOOP_2:
+    CALL MILIS_20
+    DECFSZ MULTIPLO
+    GOTO LOOP_2
+    GOTO RETORNO_TIMER
 
 SEG_1:
-    
+    MOVLW 0x32			; 50*20ms = 1s
+    MOVWF MULTIPLO
+LOOP_3:
+    CALL MILIS_20
+    DECFSZ MULTIPLO
+    GOTO LOOP_3
+    GOTO RETORNO_TIMER
     
 SEG_5:
-    
+    MOVLW 0xFA			; 250*20ms = 5s
+    MOVWF MULTIPLO
+LOOP_4:
+    CALL MILIS_20
+    DECFSZ MULTIPLO
+    GOTO LOOP_4
+    GOTO RETORNO_TIMER
     
 SEG_10:
-    
+    MOVLW 0x64			; 100*100ms = 10s
+    MOVWF MULTIPLO
+LOOP_5:
+    CALL MILIS_100
+    DECFSZ MULTIPLO
+    GOTO LOOP_5
+    GOTO RETORNO_TIMER
     
 CASE0:					;Si el número es cero,
     MOVLW b'00111111'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
@@ -203,7 +320,7 @@ CASE8:
 CASE9:
     MOVLW b'01101111'
     MOVWF PORTD
-    CALL TIMER
-    GOTO CASE8
+    CALL TIMER				;2 ciclos de instrucción = 2us
+    GOTO CASE8				;2 ciclos de instrucción = 2us
 
     END					;El programa finaliza
