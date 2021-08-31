@@ -97,20 +97,14 @@ main:
 TIMER:
     BTFSC PORTB, 0
     DECF    VEL, F
+    CALL MILIS_100			;tiempo de espera
     BTFSC PORTB, 1
     INCF    VEL, F
-    
-    ;MOVLW 0x05
-    ;CPFSLT VEL
-    ;MOVWF VEL
-    
-    ;MOVLW 0x01
-    ;CPFSGT VEL
-    ;MOVWF VEL
+    CALL MILIS_100			;tiempo de espera
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
     SUBLW 0x01				;Operación L-WREG (la literal 0x01 menos el resultado de la suma)
-    BZ	MILIS_100			;Si el resultado es cero, la suma es igual a la literal, entonces brinca a esa etiqueta
+    BZ	MILIS_100_LED			;Si el resultado es cero, la suma es igual a la literal, entonces brinca a esa etiqueta
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
     SUBLW 0x02				;Operación L-WREG (la literal 0x02 menos el número de velocidad)
@@ -128,13 +122,62 @@ TIMER:
     SUBLW 0x05
     BZ	SEG_10
     
-    BRA SEG_1			
+    BRA DEFAULT			
+    
+DEFAULT:
+    MOVLW 0x03
+    MOVWF VEL
+    BRA SEG_1
+    
+MILIS_500:
+    CLRF PORTB
+    BSF	PORTB, 4
+    MOVLW 0x03			; (2+3)*100ms = 500ms
+    MOVWF MULTIPLO
+LOOP_2:
+    CALL MILIS_100
+    DECFSZ MULTIPLO
+    GOTO LOOP_2
+    RETURN
 
-RETORNO_TIMER:
+SEG_1:
+    CLRF PORTB
+    BSF	PORTB, 5
+    MOVLW 0x08			; (2+8*100ms = 1s
+    MOVWF MULTIPLO
+LOOP_3:
+    CALL MILIS_100
+    DECFSZ MULTIPLO
+    GOTO LOOP_3
     RETURN
     
-MILIS_20:
-    MOVLW 0xFA			; 250*(77+1+2)us = 20ms
+SEG_5:
+    CLRF PORTB
+    BSF	PORTB, 6
+    MOVLW 0x30			; (2+48)*100ms = 5s
+    MOVWF MULTIPLO
+LOOP_4:
+    CALL MILIS_100
+    DECFSZ MULTIPLO
+    GOTO LOOP_4
+    RETURN
+    
+SEG_10:
+    CLRF PORTB
+    BSF	PORTB, 7
+    MOVLW 0x62			; (2+98)*100ms = 10s
+    MOVWF MULTIPLO
+LOOP_5:
+    CALL MILIS_100
+    DECFSZ MULTIPLO
+    GOTO LOOP_5
+    RETURN
+    
+MILIS_100_LED:
+    CLRF PORTB
+    BSF	PORTB, 3
+MILIS_100:
+    MOVLW 0xFA			; 250*(97+1+2)us = 20ms
     MOVWF RETARDO
 LOOP:
     NOP
@@ -214,54 +257,30 @@ LOOP:
     NOP
     NOP
     NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    
     DECFSZ RETARDO
     GOTO LOOP
     RETURN
-
-MILIS_100:
-    MOVLW 0x05			; 5*20ms = 100ms
-    MOVWF MULTIPLO
-LOOP_1:
-    CALL MILIS_20
-    DECFSZ MULTIPLO
-    GOTO LOOP_1
-    GOTO RETORNO_TIMER
-    
-MILIS_500:
-    MOVLW 0x19			; 25*20ms = 500ms
-    MOVWF MULTIPLO
-LOOP_2:
-    CALL MILIS_20
-    DECFSZ MULTIPLO
-    GOTO LOOP_2
-    GOTO RETORNO_TIMER
-
-SEG_1:
-    MOVLW 0x32			; 50*20ms = 1s
-    MOVWF MULTIPLO
-LOOP_3:
-    CALL MILIS_20
-    DECFSZ MULTIPLO
-    GOTO LOOP_3
-    GOTO RETORNO_TIMER
-    
-SEG_5:
-    MOVLW 0xFA			; 250*20ms = 5s
-    MOVWF MULTIPLO
-LOOP_4:
-    CALL MILIS_20
-    DECFSZ MULTIPLO
-    GOTO LOOP_4
-    GOTO RETORNO_TIMER
-    
-SEG_10:
-    MOVLW 0x64			; 100*100ms = 10s
-    MOVWF MULTIPLO
-LOOP_5:
-    CALL MILIS_100
-    DECFSZ MULTIPLO
-    GOTO LOOP_5
-    GOTO RETORNO_TIMER
     
 CASE0:					;Si el número es cero,
     MOVLW b'00111111'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
