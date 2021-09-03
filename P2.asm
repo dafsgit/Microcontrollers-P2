@@ -92,14 +92,65 @@ init:
 
 main:
     CALL init				;Llamar a inicialización de puertos
-    GOTO CASE9
+    
+CASE9:    
+    MOVLW b'01101111'
+    MOVWF PORTD
+    CALL TIMER
+;CASE8:
+    MOVLW b'01111111'
+    MOVWF PORTD
+    CALL TIMER    
+;CASE7:
+    MOVLW b'00000111'
+    MOVWF PORTD
+    CALL TIMER
+;CASE6:
+    MOVLW b'01111101'
+    MOVWF PORTD
+    CALL TIMER    
+;CASE5:
+    MOVLW b'01101101'
+    MOVWF PORTD
+    CALL TIMER    
+;CASE4:
+    MOVLW b'01100110'
+    MOVWF PORTD
+    CALL TIMER    
+;CASE3:
+    MOVLW b'01001111'
+    MOVWF PORTD
+    CALL TIMER    
+;CASE2:
+    MOVLW b'01011011'
+    MOVWF PORTD
+    CALL TIMER
+;CASE1:					;Si el número es 1,
+    MOVLW b'00000110'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
+    MOVWF PORTD				; el orden de la salida y los segmentos debe ser: 'gfedcba', si se manda señal en ALTO, el segmento se enciende, en BAJO permanece apagado.    
+    CALL TIMER				;Llama al ciclo que manejará la velocidad
+;CASE0:					;Si el número es cero,
+    MOVLW b'00111111'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
+    MOVWF PORTD				;Se mueve esta información a PORTD (puerto de salida al que estará conectado el display)
+    CALL TIMER				;Llama al ciclo que manejará la velocidad
+    GOTO CASE9				;Lleva al siguiente número, que es 9 porque la cuenta es descendente y vuelve a empezar
+
+DEC_BUTTON:
+    DECF    VEL, F
+    CLRF    PORTB
+    RETURN
+    
+INC_BUTTON:
+    INCF    VEL, F
+    CLRF    PORTB
+    RETURN
     
 TIMER:
     BTFSC PORTB, 0
-    DECF    VEL, F
+    CALL DEC_BUTTON
     CALL MILIS_100			;tiempo de espera
     BTFSC PORTB, 1
-    INCF    VEL, F
+    CALL INC_BUTTON
     CALL MILIS_100			;tiempo de espera
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
@@ -129,9 +180,9 @@ DEFAULT:
     MOVWF VEL
     BRA SEG_1
     
+
 MILIS_500:
-    CLRF PORTB
-    BSF	PORTB, 4
+    BTG	PORTB, 4
     MOVLW 0x03			; (2+3)*100ms = 500ms
     MOVWF MULTIPLO
 LOOP_2:
@@ -141,9 +192,8 @@ LOOP_2:
     RETURN
 
 SEG_1:
-    CLRF PORTB
-    BSF	PORTB, 5
-    MOVLW 0x08			; (2+8*100ms = 1s
+    BTG	PORTB, 2
+    MOVLW 0x08			; (2+8)*100ms = 1s
     MOVWF MULTIPLO
 LOOP_3:
     CALL MILIS_100
@@ -152,8 +202,7 @@ LOOP_3:
     RETURN
     
 SEG_5:
-    CLRF PORTB
-    BSF	PORTB, 6
+    BTG	PORTB, 6
     MOVLW 0x30			; (2+48)*100ms = 5s
     MOVWF MULTIPLO
 LOOP_4:
@@ -163,8 +212,7 @@ LOOP_4:
     RETURN
     
 SEG_10:
-    CLRF PORTB
-    BSF	PORTB, 7
+    BTG	PORTB, 7
     MOVLW 0x62			; (2+98)*100ms = 10s
     MOVWF MULTIPLO
 LOOP_5:
@@ -172,10 +220,9 @@ LOOP_5:
     DECFSZ MULTIPLO
     GOTO LOOP_5
     RETURN
-    
+  
 MILIS_100_LED:
-    CLRF PORTB
-    BSF	PORTB, 3
+    BTG	PORTB, 3
 MILIS_100:
     MOVLW 0xFA			; 250*(97+1+2)us = 20ms
     MOVWF RETARDO
@@ -277,69 +324,9 @@ LOOP:
     NOP
     NOP
     NOP
-    
     DECFSZ RETARDO
     GOTO LOOP
     RETURN
     
-CASE0:					;Si el número es cero,
-    MOVLW b'00111111'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
-    MOVWF PORTD				;Se mueve esta información a PORTD (puerto de salida al que estará conectado el display)
-    CALL TIMER				;Llama al ciclo que manejará la velocidad
-    GOTO CASE9				;Lleva al siguiente número, que es 9 porque la cuenta es descendente y vuelve a empezar
-    
-CASE1:					;Si el número es 1,
-    MOVLW b'00000110'			;Se mueve a WREG una literal que represente el número en el display de 7 segmentos
-    MOVWF PORTD				; el orden de la salida y los segmentos debe ser: 'gfedcba', si se manda señal en ALTO, el segmento se enciende, en BAJO permanece apagado.    
-    CALL TIMER				;Llama al ciclo que manejará la velocidad
-    GOTO CASE0				;Así se continua para todos los casos hasta 9...
-    
-CASE2:
-    MOVLW b'01011011'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE1
-    
-CASE3:
-    MOVLW b'01001111'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE2
-    
-CASE4:
-    MOVLW b'01100110'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE3
-    
-CASE5:
-    MOVLW b'01101101'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE4
-    
-CASE6:
-    MOVLW b'01111101'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE5
-    
-CASE7:
-    MOVLW b'00000111'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE6
-    
-CASE8:
-    MOVLW b'01111111'
-    MOVWF PORTD
-    CALL TIMER
-    GOTO CASE7
-    
-CASE9:
-    MOVLW b'01101111'
-    MOVWF PORTD
-    CALL TIMER				;2 ciclos de instrucción = 2us
-    GOTO CASE8				;2 ciclos de instrucción = 2us
-
     END					;El programa finaliza
+    
