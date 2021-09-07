@@ -150,11 +150,9 @@ INC_BUTTON:
     RETURN
     
 TIMER:
-    BTFSC PORTC, 0
-    CALL INIT_BUTTON
-    BTFSC PORTC, 1
-    CALL INC_BUTTON
-    BTFSC PORTC, 2
+    BTFSC PORTB, 0
+    CALL DEC_BUTTON
+    BTFSC PORTB, 1
     CALL INC_BUTTON
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
@@ -228,7 +226,7 @@ LOOP_5:
 MILIS_100_LED:
     BTG	PORTB, 3
 MILIS_100:
-    MOVLW 0xFA			; 250*(97+1+2)*0.5us
+    MOVLW 0xFA			; 250*(10+97+1+2)*0.5us
     MOVWF RETARDO
 LOOP:
     NOP
