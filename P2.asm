@@ -68,9 +68,8 @@
   CONFIG  EBTRB = OFF           ; Boot Block Table Read Protection bit (Boot block (000000-0007FFh) is not protected from table reads executed in other blocks)
 
 ;**************** Definitions*********************************
-VEL EQU 0x01				;Reservar un registro temporal para la cuenta
-RETARDO EQU 0x02			;Reservar un registro temporal para el retardo
-MULTIPLO EQU 0x03			;Reservar un registro temporal para el múltiplo del loop
+RETARDO EQU 0x01			;Reservar un registro temporal para el retardo
+MULTIPLO EQU 0x02			;Reservar un registro temporal para el múltiplo del loop
 ;*************************************************
 
     ORG 0x000				;vector de reset
@@ -80,19 +79,22 @@ init:
     MOVLW	0x0F			;Puertos A, B y E pueden ser digitales (I/O) o analógicos (sólo I)
     MOVWF	ADCON1			;PORTA es analógico por default y estas dos líneas lo obligan a ser digital
     
+    BSF		TRISC, 0		;RC0 es entrada
+    BSF		TRISC, 1		;RC1 es entrada
+    BSF		TRISC, 2		;RC2 es entrada
+    CLRF	TRISA			;PORTA es salida
     CLRF	TRISB			;PORTB es salida
-    BSF		TRISB, 0		;RB0 es entrada
-    BSF		TRISB, 1		;RB1 es entrada
     CLRF	TRISD			;PORTD es salida
+    CLRF	PORTA			;Limpiar el puerto A
     CLRF	PORTB			;Limpiar el puerto B
     CLRF	PORTD			;Limpiar el puerto D
-    MOVLW	0x03
-    MOVWF	VEL			;Velocidad 3 (1 segundo) por defecto.
     RETURN				;leaving initialization subroutine
 
 main:
     CALL init				;Llamar a inicialización de puertos
+
     
+
 CASE9:    
     MOVLW b'01101111'
     MOVWF PORTD
@@ -340,4 +342,3 @@ LOOP:
     RETURN
     
     END					;El programa finaliza
-    
