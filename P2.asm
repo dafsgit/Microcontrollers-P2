@@ -138,20 +138,20 @@ CASE9:
 DEC_BUTTON:
     DECF    VEL, F
     CLRF    PORTB
+    CALL MILIS_100			;tiempo de espera
     RETURN
     
 INC_BUTTON:
     INCF    VEL, F
     CLRF    PORTB
+    CALL MILIS_100			;tiempo de espera
     RETURN
     
 TIMER:
     BTFSC PORTB, 0
     CALL DEC_BUTTON
-    CALL MILIS_100			;tiempo de espera
     BTFSC PORTB, 1
     CALL INC_BUTTON
-    CALL MILIS_100			;tiempo de espera
     
     MOVF VEL, W			;Mover la info del VEL (tendrá el número de velocidad) a WREG
     SUBLW 0x01				;Operación L-WREG (la literal 0x01 menos el resultado de la suma)
@@ -183,7 +183,7 @@ DEFAULT:
 
 MILIS_500:
     BTG	PORTB, 4
-    MOVLW 0x03			; (2+3)*100ms = 500ms
+    MOVLW 0x05			; 5*100ms = 500ms
     MOVWF MULTIPLO
 LOOP_2:
     CALL MILIS_100
@@ -193,7 +193,7 @@ LOOP_2:
 
 SEG_1:
     BTG	PORTB, 2
-    MOVLW 0x08			; (2+8)*100ms = 1s
+    MOVLW 0x10			; 10*100ms = 1s
     MOVWF MULTIPLO
 LOOP_3:
     CALL MILIS_100
@@ -203,7 +203,7 @@ LOOP_3:
     
 SEG_5:
     BTG	PORTB, 6
-    MOVLW 0x30			; (2+48)*100ms = 5s
+    MOVLW 0x32			; 50*100ms = 5s
     MOVWF MULTIPLO
 LOOP_4:
     CALL MILIS_100
@@ -213,7 +213,7 @@ LOOP_4:
     
 SEG_10:
     BTG	PORTB, 7
-    MOVLW 0x62			; (2+98)*100ms = 10s
+    MOVLW 0x64			; 100*100ms = 10s
     MOVWF MULTIPLO
 LOOP_5:
     CALL MILIS_100
@@ -224,9 +224,20 @@ LOOP_5:
 MILIS_100_LED:
     BTG	PORTB, 3
 MILIS_100:
-    MOVLW 0xFA			; 250*(97+1+2)us = 20ms
+    MOVLW 0xFA			; 250*(10+97+1+2)*0.5us
     MOVWF RETARDO
 LOOP:
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    NOP
+    ;
     NOP
     NOP
     NOP
