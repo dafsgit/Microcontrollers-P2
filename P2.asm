@@ -193,7 +193,7 @@ LOOP_2:
 
 SEG_1:
     BTG	PORTB, 2
-    MOVLW 0x10			; 10*100ms = 1s
+    MOVLW 0x0A			; 10*100ms = 1s
     MOVWF MULTIPLO
 LOOP_3:
     CALL MILIS_100
